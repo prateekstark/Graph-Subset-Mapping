@@ -101,6 +101,18 @@ pair<int, int> cnfToCartesian(int cnfCoordinate, int n, int m){
 	return pair<int, int>(x, y);
 }
 
+void appendToFile(string fileName, vector<vector<int> > cnfInput, int numClauses, int numVariables){
+	ofstream satInputFile;
+	satInputFile.open(fileName, ios_base::app);
+	for(int i=0;i<cnfInput.size();i++){
+		for(int j=0;j<cnfInput.at(i).size();j++){
+			satInputFile << to_string(cnfInput.at(i).at(j)) << " ";
+		}
+		satInputFile << "0" << endl;
+	}
+	satInputFile.close();
+}
+
 int main(int argc, char *argv[]){
 	string methodName(argv[1]);
 	if(methodName.compare("generateInput") == 0){
@@ -138,6 +150,13 @@ int main(int argc, char *argv[]){
   		dimensionFile.close();
 		bool mapMatrix[n][m];
 		vector<vector<int> > cnfInput;
+		int numVariables = n*m;
+		int numClauses = cnfInput.size();
+		string tempInputFileName = inputFileName + ".satinput.tmp";
+		ofstream tempInputFile;
+		tempInputFile.open(tempInputFileName);
+		tempInputFile.close();
+		string satFileName = inputFileName + ".satinput";
 		for(int i=1; i <= n; i++){
 			vector<int> tempVector;
 			for(int j=1; j <= m-1; j++){
@@ -154,6 +173,20 @@ int main(int argc, char *argv[]){
 			}
 			cnfInput.push_back(tempVector);
 		}
+
+		appendToFile(tempInputFileName, cnfInput, numClauses, numVariables);
+		numClauses = numClauses + cnfInput.size();
+		cnfInput.clear();
+		// return 0;
+
+
+
+
+
+		// cnfInput.clear();
+
+
+
 		for(int i=1; i <= m; i++){
 			vector<int> tempVector;
 			for(int j=1; j <= n-1; j++){
@@ -165,35 +198,86 @@ int main(int argc, char *argv[]){
 				}
 			}
 		}
+		appendToFile(tempInputFileName, cnfInput, numClauses, numVariables);
+		numClauses = numClauses + cnfInput.size();
+		cnfInput.clear();
 
-		for(int i=1; i <= n; i++){
+
+		for(int i = 1; i <= n; i++){
 			vector<int> tempVector;
-			for(int j=1; j <= n; j++){
-				for(int k=1; k <= m; k++){
-					for(int l=1; l <= m; l++){
-						if(i != j && k != l){
-							tempVector.clear();
-							if(smallerGraph.vertexMap[i]->doesAdjacencyListContain(j) != largerGraph.vertexMap[k]->doesAdjacencyListContain(l)){
-								tempVector.push_back(-cnfCoordinate(i, k, n, m));
-								tempVector.push_back(-cnfCoordinate(j, l, n, m));
-								cnfInput.push_back(tempVector);
-							}
+			for(int j = 1; j <= n; j++){
+				for(int a = 0; a < largerGraph.edgeList.size(); a++){
+					int k = largerGraph.edgeList.at(a).first;
+					int l = largerGraph.edgeList.at(a).second;
+					if(i != j && k != l){
+						tempVector.clear();
+						if(smallerGraph.vertexMap[i]->doesAdjacencyListContain(j) != largerGraph.vertexMap[k]->doesAdjacencyListContain(l)){
+							tempVector.push_back(-cnfCoordinate(i, k, n, m));
+							tempVector.push_back(-cnfCoordinate(j, l, n, m));
+							cnfInput.push_back(tempVector);
 						}
 					}
 				}
 			}
 		}
-		int numVariables = n*m;
-		int numClauses = cnfInput.size();
+		appendToFile(tempInputFileName, cnfInput, numClauses, numVariables);
+		numClauses = numClauses + cnfInput.size();
+		cnfInput.clear();
+
+		for(int i = 1; i <= m; i++){
+			vector<int> tempVector;
+			for(int j = 1; j <= m; j++){
+				for(int a = 0; a < smallerGraph.edgeList.size(); a++){
+					int k = smallerGraph.edgeList.at(a).first;
+					int l = smallerGraph.edgeList.at(a).second;
+					if(i != j && k != l){
+						tempVector.clear();
+						if(largerGraph.vertexMap[i]->doesAdjacencyListContain(j) != smallerGraph.vertexMap[k]->doesAdjacencyListContain(l)){
+							tempVector.push_back(-cnfCoordinate(k, i, n, m));
+							tempVector.push_back(-cnfCoordinate(l, j, n, m));
+							cnfInput.push_back(tempVector);
+						}
+					}
+				}
+			}
+		}
+		appendToFile(tempInputFileName, cnfInput, numClauses, numVariables);
+		numClauses = numClauses + cnfInput.size();
+		cnfInput.clear();
+
+		// for(int i=1; i <= n; i++){
+		// 	vector<int> tempVector;
+		// 	for(int j=1; j <= n; j++){
+		// 		for(int k=1; k <= m; k++){
+		// 			for(int l=1; l <= m; l++){
+		// 				if(i != j && k != l){
+		// 					tempVector.clear();
+		// 					if(smallerGraph.vertexMap[i]->doesAdjacencyListContain(j) != largerGraph.vertexMap[k]->doesAdjacencyListContain(l)){
+		// 						tempVector.push_back(-cnfCoordinate(i, k, n, m));
+		// 						tempVector.push_back(-cnfCoordinate(j, l, n, m));
+		// 						cnfInput.push_back(tempVector);
+		// 					}
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }
 		ofstream satInputFile;
 		satInputFile.open(inputFileName + ".satinput");
 		satInputFile << "p cnf " << numVariables << " " << numClauses << endl;
-		for(int i=0;i<cnfInput.size();i++){
-			for(int j=0;j<cnfInput.at(i).size();j++){
-				satInputFile << to_string(cnfInput.at(i).at(j)) << " ";
-			}
-			satInputFile << "0" << endl;
+		// for(int i=0;i<cnfInput.size();i++){
+		// 	for(int j=0;j<cnfInput.at(i).size();j++){
+		// 		satInputFile << to_string(cnfInput.at(i).at(j)) << " ";
+		// 	}
+		// 	satInputFile << "0" << endl;
+		// }
+		string tempLine;
+		ifstream tempSATInputFile;
+		tempSATInputFile.open(tempInputFileName);
+		while(getline(tempSATInputFile, tempLine)){
+			satInputFile << tempLine << endl;
 		}
+		satInputFile.close();
 	}
 	if(methodName.compare("generateOutput") == 0){
 		int n, m;
