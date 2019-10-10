@@ -37,6 +37,7 @@ public:
 class Graph{
 public:
 	map<int, Node*> vertexMap;
+	vector<pair<int, int> > edgeList;
 	void addEdge(int from, int to){
 		for(int i=1; i <= from; i++){
 			if(vertexMap.find(i) == vertexMap.end()){
@@ -52,6 +53,7 @@ public:
 			}
 		}
 		vertexMap[to]->toAdjacencyList.push_back(from);
+		edgeList.push_back(pair<int, int>(from, to));
 	}
 
 	void printGraph(){
@@ -65,7 +67,6 @@ public:
 };
 
 vector<int> extractEdgeInformation(string line){
-	cout << line << endl;
 	string temp = "";
 	vector<int> answer;
 	for(int i=0;i<line.size();i++){
@@ -107,8 +108,8 @@ int main(int argc, char *argv[]){
 		Graph largerGraph;
 		Graph smallerGraph;
 		string inputFileName(argv[2]);
-		ifstream inputFile(inputFileName);
-		string line;
+		ifstream inputFile(inputFileName + ".graphs");
+ 		string line;
 		bool largeGraphInput = true;
 		if(inputFile.is_open()){
 			while(getline(inputFile, line)){
@@ -131,7 +132,6 @@ int main(int argc, char *argv[]){
 		}
 		int n = smallerGraph.vertexMap.size();
 		int m = largerGraph.vertexMap.size();
-		cout << n << " " << m << endl;
 		ofstream dimensionFile;
 		dimensionFile.open ("dimension.txt");
   		dimensionFile << n << " " << m << endl;
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]){
 		int numVariables = n*m;
 		int numClauses = cnfInput.size();
 		ofstream satInputFile;
-		satInputFile.open("test.satinput");
+		satInputFile.open(inputFileName + ".satinput");
 		satInputFile << "p cnf " << numVariables << " " << numClauses << endl;
 		for(int i=0;i<cnfInput.size();i++){
 			for(int j=0;j<cnfInput.at(i).size();j++){

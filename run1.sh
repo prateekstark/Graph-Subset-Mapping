@@ -1,1 +1,1 @@
-./a.out generateInput $1.graphs
+./a.out generateInput $1
