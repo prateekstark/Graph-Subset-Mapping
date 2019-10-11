@@ -166,6 +166,7 @@ int main(int argc, char *argv[]){
 		bool smallerGraphAdjacencyMatrix[n][n] = {0};
 		bool largerGraphAdjacencyMatrix[m][m] = {0};
 		int tempX, tempY;
+
 		for(int i=0; i<largerGraphEgdeList.size(); i++){
 			int tempY = largerGraphEgdeList[i].second;
 			int tempX = largerGraphEgdeList[i].first;
@@ -173,7 +174,9 @@ int main(int argc, char *argv[]){
 			largerGraphNumFrom[tempX - 1]++;
 			largerGraphNumTo[tempY - 1]++;
 		}
+
 		cout << "Stage 1 cleared..." << endl;
+		
 		for(int i=0; i<smallerGraphEgdeList.size(); i++){
 			int tempX = smallerGraphEgdeList[i].first;
 			int tempY = smallerGraphEgdeList[i].second;
