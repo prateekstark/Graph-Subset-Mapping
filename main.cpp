@@ -140,6 +140,7 @@ int main(int argc, char *argv[]){
 				}
 			}
 		}
+
 		int n = smallerGraph.vertexMap.size();
 		int m = largerGraph.vertexMap.size();
 
@@ -151,10 +152,37 @@ int main(int argc, char *argv[]){
 
 
 		bool mapMatrix[n][m];
-		vector<vector<int> > cnfInput;
 		int numVariables = n*m;
-
 		int numClauses = 0;
+
+		vector<pair<int, int> > largerGraphEgdeList = largerGraph.edgeList;
+		vector<pair<int, int> > smallerGraphEgdeList = smallerGraph.edgeList;
+		
+		int smallerGraphNumFrom[n] = {0};
+		int largerGraphNumFrom[m] = {0};
+		int smallerGraphNumTo[n] = {0};
+		int largerGraphNumTo[m] = {0};
+
+		bool smallerGraphAdjacencyMatrix[n][n] = {0};
+		bool largerGraphAdjacencyMatrix[m][m] = {0};
+		int tempX, tempY;
+		for(int i=0; i<largerGraphEgdeList.size(); i++){
+			int tempY = largerGraphEgdeList[i].second;
+			int tempX = largerGraphEgdeList[i].first;
+			largerGraphAdjacencyMatrix[tempX - 1][tempY - 1] = 1;
+			largerGraphNumFrom[tempX - 1]++;
+			largerGraphNumTo[tempY - 1]++;
+		}
+		cout << "Stage 1 cleared..." << endl;
+		for(int i=0; i<smallerGraphEgdeList.size(); i++){
+			int tempX = smallerGraphEgdeList[i].first;
+			int tempY = smallerGraphEgdeList[i].second;
+			smallerGraphAdjacencyMatrix[tempX - 1][tempY - 1] = 1;
+			smallerGraphNumFrom[tempX - 1]++;
+			smallerGraphNumTo[tempY - 1]++;
+		}
+
+		cout << "Stage 2 cleared..." << endl;
 
 		string tempInputFileName = inputFileName + ".satinput";
 		ofstream tempInputFile;
@@ -174,6 +202,8 @@ int main(int argc, char *argv[]){
 			numClauses++;
 		}
 
+		cout << "Stage 3 cleared..." << endl;
+
 		for(int i=1; i <= m; i++){
 			for(int j=1; j <= n-1; j++){
 				for(int k=j+1; k <= n; k++){
@@ -183,20 +213,18 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		for(int i = 1; i <= n; i++){
-			for(int j = 1; j <= n; j++){
-				if(i != j){
-					for(int a = 0; a < largerGraph.edgeList.size(); a++){
-						int k = largerGraph.edgeList.at(a).first;
-						int l = largerGraph.edgeList.at(a).second;
-						// if(smallerGraph.vertexMap[j]->fromAdjacencyList.size() > largerGraph.vertexMap[l]->fromAdjacencyList.size() || smallerGraph.vertexMap[j]->toAdjacencyList.size() > largerGraph.vertexMap[l]->toAdjacencyList.size()){
-						// 	continue;
-						// }
-						// if(smallerGraph.vertexMap[i]->fromAdjacencyList.size() > largerGraph.vertexMap[k]->fromAdjacencyList.size() || smallerGraph.vertexMap[i]->toAdjacencyList.size() > largerGraph.vertexMap[k]->toAdjacencyList.size()){
-						// 	continue;
-						// }
-						if(!smallerGraph.vertexMap[i]->doesAdjacencyListContain(j)){
-							tempInputFile << -cnfCoordinate(i, k, n, m) << " " << -cnfCoordinate(j, l, n, m) << " 0" << endl;
+		cout << "Stage 4 cleared..." << endl;
+
+		for(int i=0;i<n;i++){
+			for(int j=0;j<m;j++){
+				if(smallerGraphNumFrom[i] > largerGraphNumFrom[j] || smallerGraphNumTo[i] > largerGraphNumTo[j]){
+					tempInputFile << -cnfCoordinate(i+1, j+1, n, m) << " 0" << endl;
+					numClauses++;
+				}
+				else{
+					if(smallerGraphNumFrom[i] != 0 || smallerGraphNumTo[i] != 0){
+						if(largerGraphNumFrom[j] != smallerGraphNumFrom[i]){
+							tempInputFile << -cnfCoordinate(i+1, j+1, n, m) << " 0" << endl;
 							numClauses++;
 						}
 					}
@@ -204,26 +232,46 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		for(int i = 1; i <= m; i++){
-			for(int j = 1; j <= m; j++){
-				if(i != j){
-					for(int a = 0; a < smallerGraph.edgeList.size(); a++){
-						int k = smallerGraph.edgeList.at(a).first;
-						int l = smallerGraph.edgeList.at(a).second;
-						// if(smallerGraph.vertexMap[l]->fromAdjacencyList.size() > largerGraph.vertexMap[j]->fromAdjacencyList.size() || smallerGraph.vertexMap[l]->toAdjacencyList.size() > largerGraph.vertexMap[j]->toAdjacencyList.size()){
-						// 	continue;
-						// }
-						// if(smallerGraph.vertexMap[k]->fromAdjacencyList.size() > largerGraph.vertexMap[i]->fromAdjacencyList.size() || smallerGraph.vertexMap[k]->toAdjacencyList.size() > largerGraph.vertexMap[i]->toAdjacencyList.size()){
-						// 	continue;
-						// }
-						if(!largerGraph.vertexMap[i]->doesAdjacencyListContain(j)){
-							tempInputFile << -cnfCoordinate(k, i, n, m) << " " << -cnfCoordinate(l, j, n, m) << " 0" << endl;
-							numClauses++;
+		cout << "Stage 5 cleared..." << endl;
+
+
+		for(int a = 0; a < largerGraph.edgeList.size(); a++){
+			int k = largerGraphEgdeList[a].first;
+			int l = largerGraphEgdeList[a].second;			
+			for(int i = 1; i <= n; i++){
+				if(smallerGraphNumFrom[i-1] <= largerGraphNumFrom[k-1] && smallerGraphNumTo[i-1] <= largerGraphNumTo[k-1]){	
+					for(int j = 1; j <= n; j++){
+						if(i != j){
+							if(!smallerGraphAdjacencyMatrix[i-1][j-1]){
+								tempInputFile << -cnfCoordinate(i, k, n, m) << " " << -cnfCoordinate(j, l, n, m) << " 0" << endl;
+								numClauses++;
+							}
 						}
 					}
 				}
 			}
 		}
+
+		cout << "Stage 6 cleared..." << endl;
+
+		for(int a = 0; a < smallerGraphEgdeList.size(); a++){
+			int k = smallerGraphEgdeList[a].first;
+			int l = smallerGraphEgdeList[a].second;			
+			for(int i = 1; i <= m; i++){
+				if(smallerGraphNumFrom[k-1] <= largerGraphNumFrom[i-1] && smallerGraphNumTo[k-1] <= largerGraphNumTo[i-1]){
+					for(int j = 1; j <= m; j++){
+						if(i != j){
+							if(!largerGraphAdjacencyMatrix[i-1][j-1]){
+								tempInputFile << -cnfCoordinate(k, i, n, m) << " " << -cnfCoordinate(l, j, n, m) << " 0" << endl;
+								numClauses++;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		cout << "Stage 7 cleared..." << endl;
 		
 		tempInputFile.close();
 	}
