@@ -202,8 +202,6 @@ int main(int argc, char *argv[]){
 			numClauses++;
 		}
 
-		// cout << "Stage 3 cleared..." << endl;
-
 		for(int i=1; i <= m; i++){
 			for(int j=1; j <= n-1; j++){
 				for(int k=j+1; k <= n; k++){
@@ -213,8 +211,6 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		// cout << "Stage 4 cleared..." << endl;
-
 		for(int i=0;i<n;i++){
 			for(int j=0;j<m;j++){
 				if(smallerGraphNumFrom[i] > largerGraphNumFrom[j] || smallerGraphNumTo[i] > largerGraphNumTo[j]){
@@ -223,8 +219,6 @@ int main(int argc, char *argv[]){
 				}
 			}
 		}
-
-		// cout << "Stage 5 cleared..." << endl;
 
 		for(int a = 0; a < largerGraph.edgeList.size(); a++){
 			int k = largerGraphEgdeList[a].first;
@@ -243,8 +237,6 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		// cout << "Stage 6 cleared..." << endl;
-
 		for(int a = 0; a < smallerGraphEgdeList.size(); a++){
 			int k = smallerGraphEgdeList[a].first;
 			int l = smallerGraphEgdeList[a].second;			
@@ -262,8 +254,6 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		// cout << "Stage 7 cleared..." << endl;
-		
 		tempInputFile.close();
 		ifstream tempSatInputFile(tempInputFileName);
 
