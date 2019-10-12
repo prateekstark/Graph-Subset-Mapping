@@ -157,7 +157,6 @@ int main(int argc, char *argv[]){
 
 		vector<pair<int, int> > largerGraphEgdeList = largerGraph.edgeList;
 		vector<pair<int, int> > smallerGraphEgdeList = smallerGraph.edgeList;
-		
 		int smallerGraphNumFrom[n] = {0};
 		int largerGraphNumFrom[m] = {0};
 		int smallerGraphNumTo[n] = {0};
@@ -166,7 +165,6 @@ int main(int argc, char *argv[]){
 		bool smallerGraphAdjacencyMatrix[n][n] = {0};
 		bool largerGraphAdjacencyMatrix[m][m] = {0};
 		int tempX, tempY;
-
 		for(int i=0; i<largerGraphEgdeList.size(); i++){
 			int tempY = largerGraphEgdeList[i].second;
 			int tempX = largerGraphEgdeList[i].first;
@@ -175,8 +173,6 @@ int main(int argc, char *argv[]){
 			largerGraphNumTo[tempY - 1]++;
 		}
 
-		cout << "Stage 1 cleared..." << endl;
-		
 		for(int i=0; i<smallerGraphEgdeList.size(); i++){
 			int tempX = smallerGraphEgdeList[i].first;
 			int tempY = smallerGraphEgdeList[i].second;
@@ -185,9 +181,10 @@ int main(int argc, char *argv[]){
 			smallerGraphNumTo[tempY - 1]++;
 		}
 
-		cout << "Stage 2 cleared..." << endl;
+		// cout << "Stage 2 cleared..." << endl;
 
-		string tempInputFileName = inputFileName + ".satinput";
+		string tempInputFileName = inputFileName + ".satinput.tmp";
+		remove(tempInputFileName.c_str());
 		ofstream tempInputFile;
 		tempInputFile.open(tempInputFileName, ios_base::app);
 		for(int i=1; i <= n; i++){
@@ -205,7 +202,7 @@ int main(int argc, char *argv[]){
 			numClauses++;
 		}
 
-		cout << "Stage 3 cleared..." << endl;
+		// cout << "Stage 3 cleared..." << endl;
 
 		for(int i=1; i <= m; i++){
 			for(int j=1; j <= n-1; j++){
@@ -216,7 +213,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		cout << "Stage 4 cleared..." << endl;
+		// cout << "Stage 4 cleared..." << endl;
 
 		for(int i=0;i<n;i++){
 			for(int j=0;j<m;j++){
@@ -224,19 +221,10 @@ int main(int argc, char *argv[]){
 					tempInputFile << -cnfCoordinate(i+1, j+1, n, m) << " 0" << endl;
 					numClauses++;
 				}
-				else{
-					if(smallerGraphNumFrom[i] != 0 || smallerGraphNumTo[i] != 0){
-						if(largerGraphNumFrom[j] != smallerGraphNumFrom[i]){
-							tempInputFile << -cnfCoordinate(i+1, j+1, n, m) << " 0" << endl;
-							numClauses++;
-						}
-					}
-				}
 			}
 		}
 
-		cout << "Stage 5 cleared..." << endl;
-
+		// cout << "Stage 5 cleared..." << endl;
 
 		for(int a = 0; a < largerGraph.edgeList.size(); a++){
 			int k = largerGraphEgdeList[a].first;
@@ -255,7 +243,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		cout << "Stage 6 cleared..." << endl;
+		// cout << "Stage 6 cleared..." << endl;
 
 		for(int a = 0; a < smallerGraphEgdeList.size(); a++){
 			int k = smallerGraphEgdeList[a].first;
@@ -274,9 +262,22 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		cout << "Stage 7 cleared..." << endl;
+		// cout << "Stage 7 cleared..." << endl;
 		
 		tempInputFile.close();
+		ifstream tempSatInputFile(tempInputFileName);
+
+		ofstream satInputFile;
+		remove((inputFileName + ".satinput").c_str());
+		satInputFile.open(inputFileName + ".satinput");
+		satInputFile << "p cnf " << numVariables << " " << numClauses << endl;
+		string tempString;
+		while(getline(tempSatInputFile, tempString)){
+			satInputFile << tempString << endl;
+		}
+		tempSatInputFile.close();
+		remove(tempInputFileName.c_str());
+		satInputFile.close();		
 	}
 	if(methodName.compare("generateOutput") == 0){
 		int n, m;
